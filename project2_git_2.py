@@ -353,10 +353,14 @@ elif page == "Đánh giá mô hình và Báo cáo":
     ''')
 
     st.markdown('#### 3. Kết quả')
+
+
     st.markdown('''
     Số cụm được tạo thành trên mô hình máy học truyền thống: **03 cụm**
-    Số cụm được tạo thành trên PySpark: **02 cụm**
-             
+    Số cụm được tạo thành trên PySpark: **02 cụm**''')
+    st.image("silhoutte_sklearn.png")                
+
+    st.markdown('''      
     KMeans trên môi trường máy học truyền thống cho kết quả silhoutte score cao nhất và kết quả phân cụm dễ diễn giải hơn.
     
     **Phân loại phân khúc xe**:                
@@ -364,6 +368,8 @@ elif page == "Đánh giá mô hình và Báo cáo":
     2/ Cụm 1: Phân khúc Xe Cao Cấp – Premium / High-end Motorcycles: Tiêu biểu là các dòng SH, Vespa cao cấp, phân khối lớn, xe mới chạy ít.          
     3/ Cụm 2: Phân khúc Xe Cũ – Tiết Kiệm (Budget Used Motorcycles): Giá rẻ nhất, xe tuổi cao, chạy nhiều — phù hợp khách cần xe rẻ để di chuyển cơ bản.
     ''')
+
+
     st.write('''Trong 3 mô hình phân cụm KMeans, Bisect KMeans và Agglomerate thì KMeans với k = 3 cho kết quả phân cụm tốt nhất.
             nên mô hình phân cụm xe được sử dụng trong ứng dụng này là KMeans với k = 3.''')
 
