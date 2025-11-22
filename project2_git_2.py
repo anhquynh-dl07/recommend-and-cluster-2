@@ -165,13 +165,25 @@ def preprocess_user_input(price, min_price, max_price, mileage_km, registration_
 # st.set_page_config(page_title="Motorbike Recommendation and Motorbike Segmentation by Clustering", layout="wide")
 # st.title("Motorbike Recommendation and Motorbike Segmentation by Clustering")
 
-menu = ["Giới thiệu", "Bài toán nghiệp vụ", "Đánh giá mô hình và Báo cáo", "Gợi ý mẫu xe tương tự", "Phân cụm phân khúc xe máy"]
-page = st.sidebar.selectbox('Menu', menu)
+st.sidebar.markdown("""
+## Hệ thống gợi ý xe máy tương tự và phân cụm xe máy
+""")
+
+st.sidebar.markdown("""
+### Thành viên nhóm 6:
+1. Vũ Thị Ngọc Anh
+2. Nguyễn Phạm Quỳnh Anh
+""")
+
+st.sidebar.markdown("### Menu")   
+menu = ["Giới thiệu", "Bài toán nghiệp vụ", "Đánh giá mô hình và Báo cáo",
+        "Gợi ý mẫu xe tương tự", "Phân cụm phân khúc xe máy"]
+page = st.sidebar.selectbox("", menu)  
 
 
 if page == 'Giới thiệu':
     st.title("Hệ thống gợi ý xe máy tương tự và phân cụm xe máy")
-    # st.markdown("Ứng dụng cho phép: \n1) Gợi ý mẫu xe máy tương tự (nhập thông số xe) \n2) Xác định phân khúc xe máy bằng phương pháp phân cụm (nhập thông số hoặc upload file)")
+    
     st.image("xe_may_cu.jpg")
     st.subheader("[Trang chủ Chợ Tốt](https://www.chotot.com/)")
     
@@ -192,7 +204,7 @@ if page == 'Giới thiệu':
         giúp cho việc định giá xe hiệu quả hơn và chiến lược marketing hiệu quả hơn.
         """)
 
-    st.subheader('Phân công công việc')
+    st.header('Phân công công việc')
     st.write("""
         - Xử lý dữ liệu: Ngọc Anh và Quỳnh Anh
         - Gợi ý xe máy bằng Gensim: Quỳnh Anh
