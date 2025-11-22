@@ -172,7 +172,7 @@ page = st.sidebar.selectbox('Menu', menu)
 if page == 'Giới thiệu':
     st.title("Hệ thống gợi ý xe máy tương tự và phân cụm xe máy")
     # st.markdown("Ứng dụng cho phép: \n1) Gợi ý mẫu xe máy tương tự (nhập thông số xe) \n2) Xác định phân khúc xe máy bằng phương pháp phân cụm (nhập thông số hoặc upload file)")
-    st.image("xe_may_cu.jpg", caption="Xe máy cũ")
+    st.image("xe_may_cu.jpg")
     st.subheader("[Trang chủ Chợ Tốt](https://www.chotot.com/)")
     
     st.header('Giới thiệu dự án')
