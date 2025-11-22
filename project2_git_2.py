@@ -162,37 +162,51 @@ def preprocess_user_input(price, min_price, max_price, mileage_km, registration_
 # ==========================================================
 # STREAMLIT PAGES
 # ==========================================================
-st.sidebar.title("🚗 Motorbike Recommendation and Clustering")
-page = st.sidebar.selectbox("Menu", ["Home", "Recommendation system", "Clustering analysis"])
+# st.set_page_config(page_title="Motorbike Recommendation and Motorbike Segmentation by Clustering", layout="wide")
+# st.title("Motorbike Recommendation and Motorbike Segmentation by Clustering")
+
+menu = ["Giới thiệu", "Bài toán nghiệp vụ", "Đánh giá mô hình và Báo cáo", "Gợi ý mẫu xe tương tự", "Phân cụm phân khúc xe máy"]
+page = st.sidebar.selectbox('Menu', menu)
 
 
-if page == "Home":
-    st.title("Motorbike Data Science Project")
-    # st.write("Hệ thống gợi ý và phân cụm xe máy.")
-
+if page == 'Giới thiệu':
+    st.title("Motorbike Recommendation and Motorbike Segmentation by Clustering")
+    # st.markdown("Ứng dụng cho phép: \n1) Gợi ý mẫu xe máy tương tự (nhập thông số xe) \n2) Xác định phân khúc xe máy bằng phương pháp phân cụm (nhập thông số hoặc upload file)")
+    st.image("xe_may_cu.jpg", caption="Xe máy cũ")
+    st.subheader("[Trang chủ Chợ Tốt](https://www.chotot.com/)")
+    
     st.header('Giới thiệu dự án')
-    st.text('''Đây là Project 2 trong khóa đồ án tốt nghiệp Data Science and Machine Learning 2024 lớp DL07_K308 của nhóm 6. \nThành viên nhóm gồm có:
+    st.markdown('''Đây là dự án xây dựng hệ thống hỗ trợ **gợi ý mẫu xe máy tương tự** và **phân khúc xe máy bằng phương pháp phân cụm** trên nền tảng *Chợ Tốt* - trong khóa đồ án tốt nghiệp Data Science and Machine Learning 2024 lớp DL07_K308 của nhóm 6. \nThành viên nhóm gồm có:
         \n1. Vũ Thị Ngọc Anh \n2. Nguyễn Phạm Quỳnh Anh''')
-    st.write("""### Có 2 chủ đề trong khóa học:    
-- Topic 1: Dự đoán giá xe máy cũ, phát hiện xe máy bất thường
-- Topic 2: Hệ thống gợi ý xe máy dựa trên nội dung, phân cụm xe máy
-            """)
     
     st.header('Mục tiêu của dự án')
-    # st.text('''1. Tạo mô hình đề xuất xe máy tương tự đối với mẫu xe được chọn hoặc từ khóa tìm kiếm do người dùng cung cấp.\n2. Phân khúc thị trường xe máy''')
-    st.write("""
-Mục tiêu dự án:
-- Tạo mô hình gợi ý xe máy tương tự dựa trên mẫu xe được chọn hoặc từ khóa người dùng cung cấp, giúp hỗ trợ tìm kiếm và lựa chọn xe phù hợp.
-- Phân khúc thị trường xe máy dựa trên dữ liệu thu thập được, nhằm nhận diện các nhóm xe đặc trưng theo giá, thương hiệu, phân khối và nhu cầu người dùng.
-""")
-
-
-
-    st.header("Thu thập dữ liệu")
-
+    # st.text('''1. Tạo mô hình đề xuất xe máy tương tự đối với mẫu xe được chọn hoặc từ khóa tìm kiếm do người dùng cung cấp.\n2. Phân khúc thị trường xe máy bằng phương pháp phân cụm''')
     st.markdown("""
-    **Dữ liệu xe máy đã qua sử dụng** được thu thập từ nền tảng **Chợ Tốt**  
-    (trước ngày 01/07/2025).  
+        ### Mục tiêu của dự án:
+        **1. Xây dựng mô hình đề xuất thông minh:**
+        - Đề xuất các mẫu xe máy tương đồng cho một mẫu được chọn hoặc theo từ khóa tìm kiếm của người dùng.
+        - Kết hợp nhiều nguồn thông tin (thông số kỹ thuật, hình ảnh, mô tả, giá, đánh giá) để tăng độ chính xác.
+             
+        **2. Phân khúc thị trường xe máy:**
+        - Phân loại sản phẩm theo nhóm theo tệp giá, tuổi xe, khoảng giá tối thiểu/ tối đa, 
+        giúp cho việc định giá xe hiệu quả hơn và chiến lược marketing hiệu quả hơn.
+        """)
+
+    st.subheader('Phân công công việc')
+    st.write("""
+        - Xử lý dữ liệu: Ngọc Anh và Quỳnh Anh
+        - Gợi ý xe máy bằng Gensim: Quỳnh Anh
+        - Gợi ý xe máy bằng Cosine similarity: Ngọc Anh
+        - Phân khúc xe máy bằng phương pháp phân cụm: Ngọc Anh
+        - Làm slide: Ngọc Anh và Quỳnh Anh
+        - Giao diện streamlit: Quỳnh Anh
+
+        """)
+    
+    st.subheader("Thu thập dữ liệu")
+
+    st.markdown("""        
+    Bộ dữ liệu gồm **7.208 tin đăng** với **18 thuộc tính** (thương hiệu, dòng xe, số km, năm đăng ký, giá niêm yết, mô tả…) được thu thập từ nền tảng **Chợ Tốt** (trước ngày 01/07/2025).  
 
     Bộ dữ liệu bao gồm các thông tin sau:
 
@@ -216,6 +230,85 @@ Mục tiêu dự án:
     - **Href**: đường dẫn tới bài đăng sản phẩm  
     """)
 
+  
+elif page == "Bài toán nghiệp vụ":
+    st.header("Bài toán nghiệp vụ")
+
+    st.markdown("""
+
+        ### Vấn đề nghiệp vụ
+        - Người dùng gặp khó khăn khi tìm xe phù hợp trong hàng trăm lựa chọn.
+        - Chưa có hệ thống gợi ý xe tương tự khi người dùng chọn một mẫu cụ thể hoặc tìm kiếm theo từ khóa.
+        - Thị trường xe máy rất đa dạng → khó nhận diện các phân khúc rõ ràng.
+        - Cần hệ thống gợi ý & phân khúc tự động để hỗ trợ người dùng và đội ngũ phân tích.
+
+
+        ### Bài toán đặt ra
+        - Xây dựng mô hình **Recommendation System**:
+            - Sử dụng các đặc trưng từ mô tả xe và thông số kỹ thuật
+            - Gợi ý các mẫu xe tương tự với xe được chọn hoặc theo từ khóa tìm kiếm.
+
+        - Xây dựng mô hình **Market Segmentation**:
+            - Phân cụm thị trường xe máy dựa các đặc trưng giá xe, tuổi xe, số km đã chạy, khoảng giá tối thiểu, tối đa.
+            - Giúp nhận diện các nhóm sản phẩm theo các phân khúc khác nhau
+
+
+        ### Phạm vi triển khai
+        - **Tiền xử lý dữ liệu và chuẩn hóa**:
+            - Chuẩn hóa các thông số của xe.
+            - Làm sạch dữ liệu và chuẩn hóa trường thông tin cho mô hình.
+
+        - **Trích xuất đặc trưng văn bản**:
+            - Sử dụng **TF-IDF Vectorizer** để mã hóa mô tả và thông tin kỹ thuật.
+            - Tính độ tương đồng bằng **gensim similarity** và **cosine similarity**.
+            - Chọn phương pháp cho **điểm cao hơn** và **nghĩa đúng hơn** để đưa vào hệ thống gợi ý.
+
+        - **Phân cụm thị trường (Clustering)**:
+            - Thử nghiệm nhiều thuật toán:  
+                - **KMeans**  
+                - **Agglomerative Clustering**  
+                - **Bisecting KMeans**
+            - Đánh giá bằng inertia, silhouette score, tính diễn giải.
+            - **Chọn KMeans** vì có hiệu suất ổn định, dễ diễn giải và ranh giới cụm phù hợp hơn với dữ liệu.
+
+        - **Xây dựng GUI trên Streamlit**:
+            - Cho phép người dùng *chọn xe trong danh sách* hoặc **nhập mô tả xe** → trả về **danh sách mẫu xe tương tự có trong sàn**.
+            - Cho phép **nhập tên xe** → hiển thị **xe thuộc cụm/phân khúc nào**.
+
+        ---
+
+        ### Mục tiêu cuối cùng
+        - Xây dựng hệ thống gợi ý xe tương tự chính xác và dễ dùng.
+        - Tạo bản đồ phân khúc xe máy rõ ràng, hỗ trợ người dùng và quyết định kinh doanh.
+        - Triển khai demo trực quan, thân thiện trên **Streamlit**.
+
+    """)
+
+
+elif page == "Đánh giá mô hình và Báo cáo":    
+    st.header("Đánh giá mô hình và Báo cáo")  
+
+    st.subheader("I. Thống kê mô tả sơ bộ")
+
+    # st.markdown("""
+    # **1. Thống kê mô tả sơ bộ** 
+    # """)
+    st.markdown("""        
+    Bộ dữ liệu gồm **7.208 tin đăng** với **18 thuộc tính** (thương hiệu, dòng xe, số km, năm đăng ký, giá niêm yết, mô tả…) được thu thập từ nền tảng **Chợ Tốt** (trước ngày 01/07/2025).  
+                """)
+    # --- Vẽ biểu đồ ---
+
+    # Hiển thị 4 biểu đồ dạng lưới 2x2
+    col1, col2 = st.columns(2)
+    with col1:
+        st.image("brand_grouped_count.png")
+        st.image("age_bin_stats.png")
+
+    with col2:
+        st.image("price_bin_stats.png")
+        st.image("mileage_bin_stats.png")
+
+    st.subheader("II. Mô hình gợi ý xe máy tương tự")
 
     # with open("data/data_motobikes.xlsx", "rb") as f:
     #     st.download_button(
@@ -224,67 +317,62 @@ Mục tiêu dự án:
     #         file_name="data_motobikes.xlsx",
     #         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     #     )
+    st.markdown('#### 1. Hướng xử lý')
+    st.write('''
+             - Chuẩn hóa và làm sạch dữ liệu.
+             - Chia khoảng một số đặc trưng kiểu số để tạo thêm các đặc trưng phân loại mới (khoảng giá, tình trạng dựa theo số km chạy, tuổi xe, xe nặng hay nhẹ)
+             - Gom các đặc trưng phân loại thành biến text
+             - Làm sạch text và tokenize, xây dựng ma trận tương đồng (sparse matrix) giữa các văn bản để đánh giá mức độ giống nhau
+             - Tính độ tương đồng bằng gensim và cosine similarity
+                 - Trường hợp 1: gợi ý xe theo id sản phẩm được chọn
+                    - Người dùng chọn xe từ danh sách xe trong tập dữ liệu
+                    - Dựa trên ma trận tương đồng, tìm các xe có similarity score cao nhất.
+                    - Lấy ra 5 xe gợi ý tương tự, bỏ chính xe đã chọn.
+                    - Tính độ tương đồng trung bình giữa 5 mẫu gợi ý cho một mẫu, sau đó áp dụng cho 7000 mẫu trong tập dữ liệu và tính trung bình.
 
+                 - Trường hợp 2: gợi ý xe theo cụm từ khóa tìm kiểm (vd: “honda vision xanh dưới 15 triệu”)
+                    - Người dùng nhập từ khóa tìm kiếm. 
+                    - Xử lý từ khóa và chuyển từ khóa thành vector số dựa trên từ điển và TF-IDF
+                    - Tính độ tương đồng giữa từ khóa và tất cả xe trong dữ liệu. 
+                    - Sắp xếp và lấy ra 5 xe gợi ý phù hợp nhất.
+                    - Cho danh sách 10 cụm từ khóa tìm kiếm. Tính độ tương đồng trung bình giữa 5 mẫu gợi ý cho một mẫu, sau đó áp dụng cho 10 cụm từ trên và tính trung bình
+             ''')
+    
+    st.markdown('#### 2. Kết quả')
+    st.write('Giữa 02 mô hình Gensim và Cosine similarity, Cosine similarity, trong cả 2 trường hợp chọn xe có sẵn hoặc tìm bằng từ khóa, cho điểm tương đồng trung bình cao hơn so với Gensim và cho các gợi ý sát nghĩa hơn Gensim.\nMô hình dùng để dự đoán xe trong ứng dụng này là Cosine similarity.') 
 
-elif page == "Recommendation system":
-    st.title("Recommendation system")
-    # theo xe có sẵn
-    st.header("Gợi ý xe theo mẫu có sẵn")
-    selected = st.selectbox("Chọn mẫu xe:", df["title"])
+    st.subheader("III. Mô hình phân khúc xe máy bằng phương pháp phân cụm")
+    
+    st.markdown('#### 1. Xử lý dữ liệu')
+    st.write('Dữ liệu được làm sạch, các đặc trưng biến số liên tục như giá, khoảng giá thấp nhất, lớn nhất, tuổi xe, số km đã đi được chọn để tạo mô hình phân cụm')
 
-    if st.button("Gợi ý"):
-        similar_titles = get_similar_bikes(selected)
+    st.markdown('#### 2. Phân cụm bằng các phương pháp khác nhau')
+    st.write('''
+    Mô hình phân cụm được xây dựng trên 02 môi trường: máy học truyền thống (sci-kit learn) và PySpark.
+    - Máy học truyền thống: KMeans, Bisect Kmeans, Agglomerative clustering
+    - PySpark: Kmeans, Bisecting Kmeans, GMM.
 
-        # Filter dataframe to only the similar bikes
-        result_df = df[df["title"].isin(similar_titles)][
-            ["id", "title", "brand", "model", "price", "registration_year"]
-        ]
+    ''')
 
-        st.dataframe(result_df, width='stretch')
-        
-    # theo từ khóa
-    st.header("Tìm kiếm theo từ khóa")
-    keyword = st.text_input("Nhập từ khóa")
-    if st.button("Tìm xe tương tự") and keyword.strip():
-        similar_titles = search_by_keyword(keyword)
-
-        # Filter dataframe to only the similar bikes
-        result_search_df = df[df["title"].isin(similar_titles)][
-            ["id", "title", "brand", "model", "price", "registration_year"]
-        ]
-
-        st.dataframe(result_search_df, width='stretch')
-
-elif page == "Clustering analysis":
-    st.title("K-Means Motorbike Clustering")
-
+    st.markdown('#### 3. Kết quả')
+    st.markdown('''
+    Số cụm được tạo thành trên mô hình máy học truyền thống: **03 cụm**
+    Số cụm được tạo thành trên PySpark: **02 cụm**
+             
+    KMeans trên môi trường máy học truyền thống cho kết quả silhoutte score cao nhất và kết quả phân cụm dễ diễn giải hơn.
+    
+    **Phân loại phân khúc xe**:                
+    1/ Cụm 0: Phân khúc Xe Phổ Thông – Trung cấp (Mid-range Popular Motorcycles): Xe tuổi trung bình, giá vừa phải, phù hợp đại đa số người mua.   
+    2/ Cụm 1: Phân khúc Xe Cao Cấp – Premium / High-end Motorcycles: Rõ ràng là các dòng SH, Vespa cao cấp, phân khối lớn, xe mới chạy ít.          
+    3/ Cụm 2: Phân khúc Xe Cũ – Tiết Kiệm (Budget Used Motorcycles): Giá rẻ nhất, xe tuổi cao, chạy nhiều — phù hợp khách cần xe rẻ để di chuyển cơ bản.
+    ''')
     st.write('''Trong 3 mô hình phân cụm KMeans, Bisect KMeans và Agglomerate thì KMeans với k = 3 cho kết quả phân cụm tốt nhất.
-               \nMô hình phân cụm xe được chọn là KMeans với k = 3.''')
-    st.write("Trực quan hóa kết quả phân cụm với PCA:")
+            nên mô hình phân cụm xe được sử dụng trong ứng dụng này là KMeans với k = 3.''')
 
-    # ====== PLOT PCA CLUSTERS ======
-    fig, ax = plt.subplots(figsize=(5, 4))
-    ax.scatter(df1["x"], df1["y"], c=df1["cluster_label"], s=10)
-    ax.set_title("PCA Visualization")
-    st.pyplot(fig)
+    st.markdown('#### 4. Thống kê theo từng cụm:')
 
-    # ====== CLUSTER SUMMARY ======
-    # st.subheader("Thống kê theo từng cụm:")
-
-    # cluster_summary = (
-    #     df1.groupby('cluster_label')
-    #        .agg(
-    #            count=('cluster_label', 'size'),
-    #            avg_price=('price', 'mean'),
-    #            avg_age=('age', 'mean'),
-    #            avg_mileage=('mileage_km', 'mean')
-    #        )
-    #        .sort_values('avg_price')
-    # )
-
-    # st.dataframe(cluster_summary, width='stretch')
-
-    st.subheader("Thống kê theo từng cụm:")
+    st.write('Trực quan hóa')
+    st.image('pca_clusters.png')
 
     cluster_summary = (
         df1.groupby('cluster_label')
@@ -294,10 +382,14 @@ elif page == "Clustering analysis":
             avg_age=('age', 'mean'),
             avg_mileage=('mileage_km', 'mean')
         )
-        .sort_values('avg_price')
+        .sort_values('cluster_label')
     )
 
-    # Đổi tên cột
+
+    # Rename the index (cluster_label → Nhãn cụm xe)
+    cluster_summary = cluster_summary.rename_axis("Nhãn cụm xe")
+
+    # Rename columns
     cluster_summary = cluster_summary.rename(columns={
         "count": "Số lượng (xe)",
         "avg_price": "Giá trung bình (VND)",
@@ -321,21 +413,136 @@ elif page == "Clustering analysis":
     st.dataframe(cluster_summary, width='stretch')
 
 
-    st.subheader("Tóm tắt ý nghĩa từng cụm:")
+elif page == "Gợi ý mẫu xe tương tự":
+    st.title("Gợi ý mẫu xe tương tự")
+    # theo xe có sẵn
+    st.header("Gợi ý xe theo mẫu có sẵn")
+    selected = st.selectbox("Chọn mẫu xe:", df["title"])
+
+    if st.button("Gợi ý"):
+        similar_titles = get_similar_bikes(selected)
+        # Show thêm chính bảng ghi của xe đã chọn
+        selected_row = df[df["title"] == selected][
+            ["id", "title", "description", "price", "brand", "model",
+            "bike_type", "origin", "condition", "mileage_km",
+            "registration_year", "engine_capacity"]
+        ]
+
+        selected_row = selected_row.rename(columns={
+            "id": "id",
+            "title": "Tiêu đề",
+            "description": "Mô tả",
+            "price": "Giá",
+            "brand": "Hãng",
+            "model": "Dòng xe",
+            "bike_type": "Loại xe",
+            "origin": "Xuất xứ",
+            "condition": "Tình trạng",
+            "mileage_km": "Số km",
+            "registration_year": "Năm đăng ký",
+            "engine_capacity": "Dung tích xe"
+        })
+
+        st.markdown("**Xe bạn đã chọn:**")
+        st.dataframe(selected_row, width='stretch')
+
+        # Filter dataframe to only the similar bikes
+        result_df = df[df["title"].isin(similar_titles)][
+            ["id", "title", "description", "price", "brand", "model", "bike_type", "origin", "condition", "mileage_km" ,"registration_year", "engine_capacity"]
+        ]
+        result_df = result_df.rename(columns={
+                "id": "id",
+                "title": "Tiêu đề",
+                "description": "Mô tả",
+                "price": "Giá",
+                "brand": "Hãng",
+                "model": "Dòng xe",
+                "bike_type": "Loại xe",
+                "origin": "Xuất xứ",
+                "condition": "Tình trạng",
+                "mileage_km": "Số km",
+                "registration_year": "Năm đăng ký",
+                "engine_capacity": "Dung tích xe"
+            })
+        
+        st.markdown("**Các mẫu xe gợi ý:**")
+        st.dataframe(result_df, width='stretch')
+        
+    # theo từ khóa
+    st.header("Tìm kiếm theo từ khóa")
+    keyword = st.text_input("Nhập từ khóa")
+    if st.button("Tìm xe tương tự") and keyword.strip():
+        similar_titles = search_by_keyword(keyword)
+
+        # Filter dataframe to only the similar bikes
+        result_search_df = df[df["title"].isin(similar_titles)][
+            ["id", "title", "description", "price", "brand", "model", "bike_type", "origin", "condition", "mileage_km" ,"registration_year", "engine_capacity"]
+        ]
+        result_search_df = result_search_df.rename(columns={
+                "id": "id",
+                "title": "Tiêu đề",
+                "description": "Mô tả",
+                "price": "Giá",
+                "brand": "Hãng",
+                "model": "Dòng xe",
+                "bike_type": "Loại xe",
+                "origin": "Xuất xứ",
+                "condition": "Tình trạng",
+                "mileage_km": "Số km",
+                "registration_year": "Năm đăng ký",
+                "engine_capacity": "Dung tích xe"
+            })
+
+
+        st.dataframe(result_search_df, width='stretch')
+
+elif page == "Phân cụm phân khúc xe máy":
+    st.title("Phân cụm phân khúc xe máy")
 
     st.markdown("""
-    - **Cụm 0:** Xe phổ thông – giá rẻ, tuổi xe trung bình, số km trung bình → **nhóm chiếm thị phần lớn nhất**.
-    - **Cụm 1:** Xe mới hơn – giá cao hơn, chạy ít hơn → **phân khúc chất lượng tốt**.
-    - **Cụm 2:** Xe rất cũ – giá thấp nhất, số km cực cao → **phân khúc xuống cấp hoặc dữ liệu km không chính xác**.
-    """)
+    <style>
+    .cluster-card {
+        padding: 15px;
+        border-radius: 12px;
+        margin-top: 10px;
+        margin-bottom: 15px;
+        color: white;
+        font-size: 16px;
+    }
+    .cluster-0 {
+        background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    }
+    .cluster-1 {
+        background: linear-gradient(135deg, #1976D2, #0D47A1);
+    }
+    .cluster-2 {
+        background: linear-gradient(135deg, #F57C00, #E65100);
+    }
+    .cluster-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    .cluster-desc {
+        font-size: 15px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-    bike_labels = {0: "Xe phổ thông giá rẻ",
-                   1: "Xe tương đối mới",
-                   2: "Xe cũ xuống cấp hoặc dữ liệu cung cấp không chính xác"}
+
+    # # st.markdown("""
+    # # - **Cụm 0:** Xe phổ thông – giá rẻ, tuổi xe trung bình, số km trung bình → **nhóm chiếm thị phần lớn nhất**.
+    # # - **Cụm 1:** Xe mới hơn – giá cao hơn, chạy ít hơn → **phân khúc chất lượng tốt**.
+    # # - **Cụm 2:** Xe rất cũ – giá thấp nhất, số km cực cao → **phân khúc xuống cấp hoặc dữ liệu km không chính xác**.
+    # # """)
+
+    # bike_labels = {0: "Xe phổ thông giá rẻ, tuổi xe trung bình",
+    #                1: "Xe tương đối mới, phân khúc cao cấp",
+    #                2: "Xe cũ xuống cấp hoặc dữ liệu cung cấp không chính xác"}
 
 
     # ====== CLUSTER NEW BIKE ======
-    st.subheader("Phân cụm xe mới")
+    st.header("Phân cụm xe mới")
 
     st.write("Vui lòng nhập các thông số của xe cần xác định")
 
@@ -350,4 +557,40 @@ elif page == "Clustering analysis":
         cluster = int(kmeans.predict(X_new)[0])
         st.success(f"Xe thuộc cụm số **{cluster}**")
 
-        st.write(bike_labels.get(cluster, "Không có mô tả cho cụm này"))
+        # st.write(bike_labels.get(cluster, "Không có mô tả cho cụm này"))
+
+        # ======= HIỂN THỊ THẺ GIẢI THÍCH CỤM THEO KẾT QUẢ =======
+
+        cluster_cards = {
+            0: """
+                <div class="cluster-card cluster-0">
+                    <div class="cluster-title">Cụm 0 – Xe phổ thông giá rẻ</div>
+                    <div class="cluster-desc">
+                        Giá thấp – tuổi xe trung bình – số km chạy vừa phải.<br>
+                        Phân khúc xe phổ thông, phù hợp đa số người mua.
+                    </div>
+                </div>
+            """,
+            1: """
+                <div class="cluster-card cluster-1">
+                    <div class="cluster-title">Cụm 1 – Xe cao cấp / ít chạy</div>
+                    <div class="cluster-desc">
+                        Xe mới – ít km – giá cao.<br>
+                        Các dòng SH, Vespa, xe cao cấp, tình trạng tốt.
+                    </div>
+                </div>
+            """,
+            2: """
+                <div class="cluster-card cluster-2">
+                    <div class="cluster-title">Cụm 2 – Xe cũ / giá rẻ</div>
+                    <div class="cluster-desc">
+                        Giá thấp nhất – km rất cao – tuổi xe lớn.<br>
+                        Phân khúc xe đã cũ hoặc có dấu hiệu xuống cấp.
+                    </div>
+                </div>
+            """
+        }
+
+        # Hiển thị card tương ứng
+        st.markdown(cluster_cards.get(cluster, ""), unsafe_allow_html=True)
+
