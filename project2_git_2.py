@@ -241,7 +241,7 @@ elif page == "Bài toán nghiệp vụ":
             - Chuẩn hóa các thông số của xe.
             - Làm sạch dữ liệu và chuẩn hóa trường thông tin cho mô hình.
 
-        - **Trích xuất đặc trưng văn bản**:
+        - **Trích xuất đặc trưng văn bản và tính độ tương đồng**:
             - Sử dụng **TF-IDF Vectorizer** để mã hóa mô tả và thông tin kỹ thuật.
             - Tính độ tương đồng bằng **gensim similarity** và **cosine similarity**.
             - Chọn phương pháp cho **điểm cao hơn** và **nghĩa đúng hơn** để đưa vào hệ thống gợi ý.
