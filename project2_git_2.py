@@ -546,10 +546,16 @@ elif page == "Phân cụm phân khúc xe máy":
 
     st.write("Vui lòng nhập các thông số của xe cần xác định")
 
-    price = st.number_input("Giá xe (VND)", min_value=500_000, step=100_000)
-    min_price = st.number_input("Khoảng giá min", min_value=500_000, step=100_000)
-    max_price = st.number_input("Khoảng giá max", min_value=500_000, step=100_000)
-    mileage_km = st.number_input("Số km đã đi", min_value=0, step=100)
+    col1, col2 = st.columns(2)
+
+    with col1:
+        price = st.number_input("Giá xe (VND)", min_value=500_000, step=100_000, value=1_000_000)
+        min_price = st.number_input("Khoảng giá min", min_value=500_000, step=100_000, value=800_000)
+
+    with col2:
+        max_price = st.number_input("Khoảng giá max", min_value=500_000, step=100_000, value=1_200_000)
+        mileage_km = st.number_input("Số km đã đi", min_value=0, step=100, value=1000)
+
     registration_year = st.slider("Năm đăng ký", 1980, 2025)
 
     if st.button("Phân cụm"):
