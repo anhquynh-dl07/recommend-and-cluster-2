@@ -244,12 +244,12 @@ elif page == "Bài toán nghiệp vụ":
             - **Chọn KMeans** vì có hiệu suất ổn định, dễ diễn giải và ranh giới cụm phù hợp hơn với dữ liệu.
 
         - **Xây dựng GUI trên Streamlit**:
-            - Cho phép người dùng *chọn xe trong danh sách* hoặc **nhập mô tả xe** → trả về **danh sách mẫu xe tương tự có trong sàn**.
+            - Cho phép người dùng **chọn xe trong danh sách** hoặc **nhập mô tả xe** → trả về **danh sách mẫu xe tương tự có trong sàn**.
             - Cho phép **nhập tên xe** → hiển thị **xe thuộc cụm/phân khúc nào**.
 
 
         ### Thu thập dữ liệu
-        - Bộ dữ liệu gồm **7.208 tin đăng** với **18 thuộc tính** (thương hiệu, dòng xe, số km, năm đăng ký, giá niêm yết, mô tả…) được thu thập từ nền tảng **Chợ Tốt** (trước ngày 01/07/2025).
+        - Bộ dữ liệu gồm **7.208 tin đăng** với **18 thuộc tính** (thương hiệu, dòng xe, số km, năm đăng ký, giá niêm yết, mô tả, v.v…) được thu thập từ nền tảng **Chợ Tốt** (trước ngày 01/07/2025).
         - Bộ dữ liệu bao gồm các thông tin sau:
             - **id**: số thứ tự của sản phẩm trong bộ dữ liệu  
             - **Tiêu đề**: tựa đề bài đăng bán sản phẩm  
