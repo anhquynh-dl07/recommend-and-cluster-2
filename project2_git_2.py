@@ -194,7 +194,6 @@ if page == 'Giới thiệu':
     st.header('Mục tiêu của dự án')
     # st.text('''1. Tạo mô hình đề xuất xe máy tương tự đối với mẫu xe được chọn hoặc từ khóa tìm kiếm do người dùng cung cấp.\n2. Phân khúc thị trường xe máy bằng phương pháp phân cụm''')
     st.markdown("""
-        ### Mục tiêu của dự án:
         **1. Xây dựng mô hình đề xuất thông minh:**
         - Đề xuất các mẫu xe máy tương đồng cho một mẫu được chọn hoặc theo từ khóa tìm kiếm của người dùng.
         - Kết hợp nhiều nguồn thông tin (thông số kỹ thuật, hình ảnh, mô tả, giá, đánh giá) để tăng độ chính xác.
