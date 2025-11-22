@@ -170,7 +170,7 @@ page = st.sidebar.selectbox('Menu', menu)
 
 
 if page == 'Giới thiệu':
-    st.title("Motorbike Recommendation and Motorbike Segmentation by Clustering")
+    st.title("Hệ thống gợi ý xe máy tương tự và phân cụm xe máy")
     # st.markdown("Ứng dụng cho phép: \n1) Gợi ý mẫu xe máy tương tự (nhập thông số xe) \n2) Xác định phân khúc xe máy bằng phương pháp phân cụm (nhập thông số hoặc upload file)")
     st.image("xe_may_cu.jpg", caption="Xe máy cũ")
     st.subheader("[Trang chủ Chợ Tốt](https://www.chotot.com/)")
@@ -203,34 +203,6 @@ if page == 'Giới thiệu':
 
         """)
     
-    st.subheader("Thu thập dữ liệu")
-
-    st.markdown("""        
-    Bộ dữ liệu gồm **7.208 tin đăng** với **18 thuộc tính** (thương hiệu, dòng xe, số km, năm đăng ký, giá niêm yết, mô tả…) được thu thập từ nền tảng **Chợ Tốt** (trước ngày 01/07/2025).  
-
-    Bộ dữ liệu bao gồm các thông tin sau:
-
-    - **id**: số thứ tự của sản phẩm trong bộ dữ liệu  
-    - **Tiêu đề**: tựa đề bài đăng bán sản phẩm  
-    - **Giá**: giá bán của xe máy  
-    - **Khoảng giá min**: giá sàn ước tính của xe máy  
-    - **Khoảng giá max**: giá trần ước tính của xe máy  
-    - **Địa chỉ**: địa chỉ giao dịch (phường, quận, thành phố Hồ Chí Minh)  
-    - **Mô tả chi tiết**: mô tả thêm về sản phẩm — đặc điểm nổi bật, tình trạng, thông tin khác  
-    - **Thương hiệu**: hãng sản xuất (Honda, Yamaha, Piaggio, SYM…)  
-    - **Dòng xe**: dòng xe cụ thể (Air Blade, Vespa, Exciter, LEAD, Vario, …)  
-    - **Năm đăng ký**: năm đăng ký lần đầu của xe  
-    - **Số km đã đi**: số kilomet xe đã vận hành  
-    - **Tình trạng**: tình trạng hiện tại (ví dụ: đã sử dụng)  
-    - **Loại xe**: Xe số, Tay ga, Tay côn/Moto  
-    - **Dung tích xe**: dung tích xi-lanh (ví dụ: Dưới 50cc, 50–100cc, 100–175cc, …)  
-    - **Xuất xứ**: quốc gia sản xuất (Việt Nam, Đài Loan, Nhật Bản, ...)  
-    - **Chính sách bảo hành**: thông tin bảo hành nếu có  
-    - **Trọng lượng**: trọng lượng ước tính của xe  
-    - **Href**: đường dẫn tới bài đăng sản phẩm  
-    """)
-
-  
 elif page == "Bài toán nghiệp vụ":
     st.header("Bài toán nghiệp vụ")
 
@@ -244,11 +216,11 @@ elif page == "Bài toán nghiệp vụ":
 
 
         ### Bài toán đặt ra
-        - Xây dựng mô hình **Recommendation System**:
+        - Xây dựng mô hình **Gợi ý xe tương tự**:
             - Sử dụng các đặc trưng từ mô tả xe và thông số kỹ thuật
             - Gợi ý các mẫu xe tương tự với xe được chọn hoặc theo từ khóa tìm kiếm.
 
-        - Xây dựng mô hình **Market Segmentation**:
+        - Xây dựng mô hình **Phân khúc thị trường xe bằng phương pháp phân cụm**:
             - Phân cụm thị trường xe máy dựa các đặc trưng giá xe, tuổi xe, số km đã chạy, khoảng giá tối thiểu, tối đa.
             - Giúp nhận diện các nhóm sản phẩm theo các phân khúc khác nhau
 
@@ -264,7 +236,7 @@ elif page == "Bài toán nghiệp vụ":
             - Chọn phương pháp cho **điểm cao hơn** và **nghĩa đúng hơn** để đưa vào hệ thống gợi ý.
 
         - **Phân cụm thị trường (Clustering)**:
-            - Thử nghiệm nhiều thuật toán:  
+            - Thử nghiệm trên các thuật toán:  
                 - **KMeans**  
                 - **Agglomerative Clustering**  
                 - **Bisecting KMeans**
@@ -275,12 +247,28 @@ elif page == "Bài toán nghiệp vụ":
             - Cho phép người dùng *chọn xe trong danh sách* hoặc **nhập mô tả xe** → trả về **danh sách mẫu xe tương tự có trong sàn**.
             - Cho phép **nhập tên xe** → hiển thị **xe thuộc cụm/phân khúc nào**.
 
-        ---
 
-        ### Mục tiêu cuối cùng
-        - Xây dựng hệ thống gợi ý xe tương tự chính xác và dễ dùng.
-        - Tạo bản đồ phân khúc xe máy rõ ràng, hỗ trợ người dùng và quyết định kinh doanh.
-        - Triển khai demo trực quan, thân thiện trên **Streamlit**.
+        ### Thu thập dữ liệu
+        - Bộ dữ liệu gồm **7.208 tin đăng** với **18 thuộc tính** (thương hiệu, dòng xe, số km, năm đăng ký, giá niêm yết, mô tả…) được thu thập từ nền tảng **Chợ Tốt** (trước ngày 01/07/2025).
+        - Bộ dữ liệu bao gồm các thông tin sau:
+            - **id**: số thứ tự của sản phẩm trong bộ dữ liệu  
+            - **Tiêu đề**: tựa đề bài đăng bán sản phẩm  
+            - **Giá**: giá bán của xe máy  
+            - **Khoảng giá min**: giá sàn ước tính của xe máy  
+            - **Khoảng giá max**: giá trần ước tính của xe máy  
+            - **Địa chỉ**: địa chỉ giao dịch (phường, quận, thành phố Hồ Chí Minh)  
+            - **Mô tả chi tiết**: mô tả thêm về sản phẩm — đặc điểm nổi bật, tình trạng, thông tin khác  
+            - **Thương hiệu**: hãng sản xuất (Honda, Yamaha, Piaggio, SYM…)  
+            - **Dòng xe**: dòng xe cụ thể (Air Blade, Vespa, Exciter, LEAD, Vario, …)  
+            - **Năm đăng ký**: năm đăng ký lần đầu của xe  
+            - **Số km đã đi**: số kilomet xe đã vận hành  
+            - **Tình trạng**: tình trạng hiện tại (ví dụ: đã sử dụng)  
+            - **Loại xe**: Xe số, Tay ga, Tay côn/Moto  
+            - **Dung tích xe**: dung tích xi-lanh (ví dụ: Dưới 50cc, 50–100cc, 100–175cc, …)  
+            - **Xuất xứ**: quốc gia sản xuất (Việt Nam, Đài Loan, Nhật Bản, ...)  
+            - **Chính sách bảo hành**: thông tin bảo hành nếu có  
+            - **Trọng lượng**: trọng lượng ước tính của xe  
+            - **Href**: đường dẫn tới bài đăng sản phẩm 
 
     """)
 
@@ -320,14 +308,13 @@ elif page == "Đánh giá mô hình và Báo cáo":
     st.markdown('#### 1. Hướng xử lý')
     st.write('''
              - Chuẩn hóa và làm sạch dữ liệu.
-             - Chia khoảng một số đặc trưng kiểu số để tạo thêm các đặc trưng phân loại mới (khoảng giá, tình trạng dựa theo số km chạy, tuổi xe, xe nặng hay nhẹ)
+             - Chia khoảng một số đặc trưng kiểu số để tạo thêm các đặc trưng phân loại mới (khoảng giá, tình trạng dựa theo số km chạy, tuổi xe, dung tích xe)
              - Gom các đặc trưng phân loại thành biến text
              - Làm sạch text và tokenize, xây dựng ma trận tương đồng (sparse matrix) giữa các văn bản để đánh giá mức độ giống nhau
              - Tính độ tương đồng bằng gensim và cosine similarity
                  - Trường hợp 1: gợi ý xe theo id sản phẩm được chọn
                     - Người dùng chọn xe từ danh sách xe trong tập dữ liệu
                     - Dựa trên ma trận tương đồng, tìm các xe có similarity score cao nhất.
-                    - Lấy ra 5 xe gợi ý tương tự, bỏ chính xe đã chọn.
                     - Tính độ tương đồng trung bình giữa 5 mẫu gợi ý cho một mẫu, sau đó áp dụng cho 7000 mẫu trong tập dữ liệu và tính trung bình.
 
                  - Trường hợp 2: gợi ý xe theo cụm từ khóa tìm kiểm (vd: “honda vision xanh dưới 15 triệu”)
