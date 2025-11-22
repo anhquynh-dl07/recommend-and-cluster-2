@@ -216,7 +216,7 @@ if page == 'Giới thiệu':
         """)
     
 elif page == "Bài toán nghiệp vụ":
-    st.header("Bài toán nghiệp vụ")
+    st.title("Bài toán nghiệp vụ")
 
     st.markdown("""
 
@@ -286,7 +286,7 @@ elif page == "Bài toán nghiệp vụ":
 
 
 elif page == "Đánh giá mô hình và Báo cáo":    
-    st.header("Đánh giá mô hình và Báo cáo")  
+    st.title("Đánh giá mô hình và Báo cáo")  
 
     st.subheader("I. Thống kê mô tả sơ bộ")
 
@@ -362,7 +362,7 @@ elif page == "Đánh giá mô hình và Báo cáo":
     
     **Phân loại phân khúc xe**:                
     1/ Cụm 0: Phân khúc Xe Phổ Thông – Trung cấp (Mid-range Popular Motorcycles): Xe tuổi trung bình, giá vừa phải, phù hợp đại đa số người mua.   
-    2/ Cụm 1: Phân khúc Xe Cao Cấp – Premium / High-end Motorcycles: Rõ ràng là các dòng SH, Vespa cao cấp, phân khối lớn, xe mới chạy ít.          
+    2/ Cụm 1: Phân khúc Xe Cao Cấp – Premium / High-end Motorcycles: Tiêu biểu là các dòng SH, Vespa cao cấp, phân khối lớn, xe mới chạy ít.          
     3/ Cụm 2: Phân khúc Xe Cũ – Tiết Kiệm (Budget Used Motorcycles): Giá rẻ nhất, xe tuổi cao, chạy nhiều — phù hợp khách cần xe rẻ để di chuyển cơ bản.
     ''')
     st.write('''Trong 3 mô hình phân cụm KMeans, Bisect KMeans và Agglomerate thì KMeans với k = 3 cho kết quả phân cụm tốt nhất.
