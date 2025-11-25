@@ -4,7 +4,9 @@ import numpy as np
 import pickle
 import joblib
 from sklearn.metrics.pairwise import cosine_similarity
-import matplotlib.pyplot as plt
+from scipy.sparse import csr_matrix, hstack
+import plotly.express as px
+import textwrap
 
 # ==========================================================
 # 1. CACHED LOADERS
@@ -70,11 +72,32 @@ def load_and_clean_data():
         .replace('', np.nan).astype(float)
     )
 
+    # Minimal cleaning df price for display
+    if 'price' in df.columns:
+        df['price'] = df['price'].astype(str).str.replace('[^0-9]', '', regex=True)
+        df.loc[df['price'] == '', 'price'] = np.nan
+        df['price'] = pd.to_numeric(df['price'], errors='coerce')
+
+    # ensure registration_year numeric
+    if 'registration_year' in df.columns:
+        df['registration_year'] = (
+            df['registration_year'].astype(str)
+            .str.lower()
+            .str.replace('trước năm', '1980', regex=False)
+            .str.extract(r'(\d{4})')[0]
+        )
+        df['registration_year'] = pd.to_numeric(df['registration_year'], errors='coerce')
+        df.loc[(df['registration_year'] < 1980) | (df['registration_year'] > 2025), 'registration_year'] = np.nan
+    
+
     def parse_price(s):
         if pd.isna(s): return np.nan
         s = str(s).lower().replace("tr", "").replace(" ", "")
         try: return float(s) * 1_000_000
         except: return np.nan
+
+    df['min_price'] = df['min_price'].apply(parse_price)
+    df['max_price'] = df['max_price'].apply(parse_price)
 
     df1['min_price'] = df1['min_price'].apply(parse_price)
     df1['max_price'] = df1['max_price'].apply(parse_price)
@@ -127,6 +150,8 @@ def compute_clusters(df1):
 
     return df1, num_cols
 
+
+
 # ==========================================================
 # LOAD EVERYTHING (CACHED)
 # ==========================================================
@@ -139,10 +164,10 @@ df1, num_cols = compute_clusters(df1)
 # ==========================================================
 # FUNCTIONS
 # ==========================================================
-def get_similar_bikes(title, top_n=5):
-    idx = df.index[df["title"] == title][0]
-    scores = sorted(list(enumerate(cosine_sim[idx])), key=lambda x: x[1], reverse=True)
-    return [df.iloc[i[0]]["title"] for i in scores[1:top_n+1]]
+# def get_similar_bikes(title, top_n=5):
+#     idx = df.index[df["title"] == title][0]
+#     scores = sorted(list(enumerate(cosine_sim[idx])), key=lambda x: x[1], reverse=True)
+#     return [df.iloc[i[0]]["title"] for i in scores[1:top_n+1]]
 
 
 def search_by_keyword(keyword, top_n=5):
@@ -158,19 +183,41 @@ def preprocess_user_input(price, min_price, max_price, mileage_km, registration_
     X = np.array([[age, mileage_km, min_price, max_price, log_price]])
     return scaler.transform(X)
 
+def get_top_n_similar_by_title(title, top_n=5):
+    try:
+        idx = df.index[df['title'] == title][0]
+    except Exception:
+        return []
+    sims = list(enumerate(cosine_sim[idx]))
+    sims = sorted(sims, key=lambda x: x[1], reverse=True)
+    titles = [df.iloc[i]['title'] for i, _ in sims[1:top_n+1]]
+    scores = [s for _, s in sims[1:top_n+1]]
+    return titles, scores
+
+# helper: safe format number
+def fmt_vnd(x):
+    try:
+        return f"{int(x):,} VNĐ"
+    except:
+        return '-'
 
 # ==========================================================
 # STREAMLIT PAGES
 # ==========================================================
-# st.set_page_config(page_title="Motorbike Recommendation and Motorbike Segmentation by Clustering", layout="wide")
-# st.title("Motorbike Recommendation and Motorbike Segmentation by Clustering")
+
+st.set_page_config(
+    page_title="Hệ thống gợi ý xe máy tương tự và phân cụm xe máy",
+    page_icon="🏍️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 st.sidebar.markdown("""
 ## Hệ thống gợi ý xe máy tương tự và phân cụm xe máy
 """)
 
 st.sidebar.markdown("""
-### Thành viên nhóm 6:
+### Thành viên nhóm 6
 1. Vũ Thị Ngọc Anh
 2. Nguyễn Phạm Quỳnh Anh
 """)
@@ -180,86 +227,222 @@ menu = ["Giới thiệu", "Bài toán nghiệp vụ", "Đánh giá mô hình và
         "Gợi ý mẫu xe tương tự", "Phân cụm phân khúc xe máy"]
 page = st.sidebar.selectbox("", menu)  
 
+# ==========================================================
+# STYLES
+# ==========================================================
+
+BASE_CSS = """
+<style>
+:root{
+  --accent-1: #ffde37;       /* Your yellow */
+  --accent-2: #e5c620;       /* Slightly darker yellow for gradients */
+  --muted: #4a4a4a;
+  --card-bg: #fff7c2;        /* Soft light yellow background */
+  --glass: rgba(255,255,255,0.55);
+}
+
+/* Background */
+html, body {
+  background: linear-gradient(180deg, #fff5a0 0%, #ffef73 100%);
+  color: #000000 !important;
+}
+
+/* Header / hero section */
+.header-hero {
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+  padding: 22px;
+  border-radius: 12px;
+  color: #000000;
+  font-weight: 600;
+  margin-bottom: 18px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+}
+
+/* Small muted text */
+.small-muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* Cards */
+.card {
+  background: var(--card-bg);
+  padding: 14px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+  color: #000000;
+}
+
+/* Base typography */
+h1, h2, h3, h4, h5, h6, p, span, div {
+  color: #000000 !important;
+}
+
+/* Bike title / subtitles */
+.bike-title{
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:4px;
+}
+
+.bike-sub{
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+
+/* Cluster cards */
+.cluster-card{
+  padding:18px;
+  border-radius:12px;
+  color:#000000;
+  margin-bottom:12px;
+  font-weight:600;
+}
+
+/* Cluster variants using your yellow palette */
+.cluster-0{
+  background:linear-gradient(135deg, #ffeb7a, #ffde37);
+}
+.cluster-1{
+  background:linear-gradient(135deg, #ffe45c, #e5c620);
+}
+.cluster-2{
+  background:linear-gradient(135deg, #fff1a1, #ffde37);
+}
+</style>
+"""
+
+st.markdown(BASE_CSS, unsafe_allow_html=True)
+
+# ==========================================================
+# PAGE CONTENT
+# ==========================================================
 
 if page == 'Giới thiệu':
-    st.title("Hệ thống gợi ý xe máy tương tự và phân cụm xe máy")
-    
-    st.image("xe_may_cu.jpg")
+    # st.title("Hệ thống gợi ý xe máy tương tự và phân cụm xe máy")
+    st.markdown("""
+        <h1 style='font-size:48px; font-weight:800; margin-bottom:8px;'>
+            Hệ thống gợi ý xe máy tương tự và phân cụm xe máy
+        </h1>
+        <div style='width:90px; height:6px; background:#FF9A00; border-radius:3px; margin-bottom:24px;'></div>
+    """, unsafe_allow_html=True)    
+    st.image("xe_may_cu2.jpg")
     st.subheader("[Trang chủ Chợ Tốt](https://www.chotot.com/)")
-    
-    st.header('Giới thiệu dự án')
-    st.markdown('''Đây là dự án xây dựng hệ thống hỗ trợ **gợi ý mẫu xe máy tương tự** và **phân khúc xe máy bằng phương pháp phân cụm** trên nền tảng *Chợ Tốt* - trong khóa đồ án tốt nghiệp Data Science and Machine Learning 2024 lớp DL07_K308 của nhóm 6. \nThành viên nhóm gồm có:
-        \n1. Vũ Thị Ngọc Anh \n2. Nguyễn Phạm Quỳnh Anh''')
-    
-    st.header('Mục tiêu của dự án')
-    # st.text('''1. Tạo mô hình đề xuất xe máy tương tự đối với mẫu xe được chọn hoặc từ khóa tìm kiếm do người dùng cung cấp.\n2. Phân khúc thị trường xe máy bằng phương pháp phân cụm''')
-    st.markdown("""
-        **1. Xây dựng mô hình đề xuất thông minh:**
-        - Đề xuất các mẫu xe máy tương đồng cho một mẫu được chọn hoặc theo từ khóa tìm kiếm của người dùng.
-        - Kết hợp nhiều nguồn thông tin (thông số kỹ thuật, hình ảnh, mô tả, giá, đánh giá) để tăng độ chính xác.
-             
-        **2. Phân khúc thị trường xe máy:**
-        - Phân loại sản phẩm theo nhóm theo tệp giá, tuổi xe, khoảng giá tối thiểu/ tối đa, 
-        giúp cho việc định giá xe hiệu quả hơn và chiến lược marketing hiệu quả hơn.
-        """)
 
-    st.header('Phân công công việc')
+        # Function for light yellow pad header
+    def yellow_pad_header(text):
+        st.markdown(f"""
+            <div style="
+                background: #FFF4C2;
+                border-left: 6px solid #FFDE37;
+                padding: 12px 18px;
+                border-radius: 6px;
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                margin: 15px 0 10px 0;
+            ">
+                {text}
+            </div>
+        """, unsafe_allow_html=True)
+    
+    yellow_pad_header('Giới thiệu dự án')
+    st.markdown('''Đây là dự án xây dựng hệ thống hỗ trợ **gợi ý mẫu xe máy tương tự** 
+và **phân khúc xe máy bằng phương pháp phân cụm** trên nền tảng *Chợ Tốt* – 
+trong khóa đồ án tốt nghiệp Data Science and Machine Learning 2024 lớp DL07_K308 của nhóm 6.
+
+Thành viên nhóm gồm có:
+1. Vũ Thị Ngọc Anh  
+2. Nguyễn Phạm Quỳnh Anh
+''')
+
+    yellow_pad_header('Mục tiêu của dự án')
+    st.markdown("""
+    **1. Xây dựng mô hình đề xuất thông minh:**
+    - Đề xuất các mẫu xe máy tương đồng cho một mẫu được chọn hoặc theo từ khóa tìm kiếm.
+    - Kết hợp nhiều nguồn thông tin (thông số kỹ thuật, hình ảnh, mô tả, giá, đánh giá) để tăng độ chính xác.
+
+    **2. Phân khúc thị trường xe máy:**
+    - Phân loại sản phẩm theo nhóm theo tệp giá, tuổi xe, khoảng giá tối thiểu/tối đa.
+    - Hỗ trợ định giá và xây dựng chiến lược marketing hiệu quả hơn.
+    """)
+
+    yellow_pad_header('Phân công công việc')
     st.write("""
-        - Xử lý dữ liệu: Ngọc Anh và Quỳnh Anh
-        - Gợi ý xe máy bằng Gensim: Quỳnh Anh
-        - Gợi ý xe máy bằng Cosine similarity: Ngọc Anh
-        - Phân khúc xe máy bằng phương pháp phân cụm: Ngọc Anh
-        - Làm slide: Ngọc Anh và Quỳnh Anh
-        - Giao diện streamlit: Quỳnh Anh
-
-        """)
+    - **Xử lý dữ liệu:** Ngọc Anh và Quỳnh Anh  
+    - **Gợi ý xe máy bằng Gensim:** Quỳnh Anh  
+    - **Gợi ý xe máy bằng Cosine similarity:** Ngọc Anh  
+    - **Phân khúc xe máy bằng phương pháp phân cụm:** Ngọc Anh  
+    - **Làm slide:** Ngọc Anh và Quỳnh Anh  
+    - **Giao diện Streamlit:** Quỳnh Anh
+    """)
     
-elif page == "Bài toán nghiệp vụ":
-    st.title("Bài toán nghiệp vụ")
-
+elif page == 'Bài toán nghiệp vụ':
     st.markdown("""
+    <h1 style='font-size:48px; font-weight:800; margin-bottom:8px;'>
+        Bài toán nghiệp vụ
+    </h1>
+    <div style='width:90px; height:6px; background:#FF9A00; border-radius:3px; margin-bottom:24px;'></div>
+""", unsafe_allow_html=True)
+    # Function for light yellow pad header
+    def yellow_pad_header(text):
+        st.markdown(f"""
+            <div style="
+                background: #FFF4C2;
+                border-left: 6px solid #FFDE37;
+                padding: 12px 18px;
+                border-radius: 6px;
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                margin: 15px 0 10px 0;
+            ">
+                {text}
+            </div>
+        """, unsafe_allow_html=True)
 
-        ### Vấn đề nghiệp vụ
+    yellow_pad_header('Vấn đề nghiệp vụ')
+    st.markdown("""
         - Người dùng gặp khó khăn khi tìm xe phù hợp trong hàng trăm lựa chọn.
         - Chưa có hệ thống gợi ý xe tương tự khi người dùng chọn một mẫu cụ thể hoặc tìm kiếm theo từ khóa.
         - Thị trường xe máy rất đa dạng → khó nhận diện các phân khúc rõ ràng.
-        - Cần hệ thống gợi ý & phân khúc tự động để hỗ trợ người dùng và đội ngũ phân tích.
+        - Cần hệ thống gợi ý & phân khúc tự động để hỗ trợ người dùng và đội ngũ phân tích.""")
 
+    yellow_pad_header('Bài toán đặt ra')
+    st.markdown("""
+        1. Xây dựng mô hình **Gợi ý xe tương tự**
+        - Sử dụng các đặc trưng từ mô tả xe và thông số kỹ thuật
+        - Gợi ý các mẫu xe tương tự với xe được chọn hoặc theo từ khóa tìm kiếm.
+        &nbsp;
+        2. Xây dựng mô hình **Phân khúc thị trường xe bằng phương pháp phân cụm**
+        - Phân cụm thị trường xe máy dựa các đặc trưng giá xe, tuổi xe, số km đã chạy, khoảng giá tối thiểu, tối đa.
+        - Giúp nhận diện và phân loại xe theo các phân khúc khác nhau.
+                """)
+    
+    yellow_pad_header('Phạm vi triển khai')
+    st.markdown("""
+        **1. Tiền xử lý dữ liệu và chuẩn hóa**:  
+            - Chuẩn hóa các thông số của xe.  
+            - Làm sạch dữ liệu và chuẩn hóa trường thông tin cho mô hình.  
+                
+        **2. Trích xuất đặc trưng văn bản và tính độ tương đồng**:  
+            - Sử dụng **TF-IDF Vectorizer** để mã hóa mô tả và thông tin kỹ thuật.  
+            - Tính độ tương đồng bằng **gensim similarity** và **cosine similarity**.  
+            - Chọn phương pháp cho **điểm cao hơn** và **nghĩa đúng hơn** để đưa vào hệ thống gợi ý.  
+                
+        **3. Phân cụm thị trường (Clustering)**:  
+            - Thử nghiệm trên các thuật toán: KMeans, Bisecting KMeans, Agglomerative Clustering  
+            - Đánh giá bằng inertia, silhouette score, tính diễn giải.  
+            - Chọn **KMeans** vì có hiệu suất ổn định, dễ diễn giải và ranh giới cụm phù hợp hơn với dữ liệu.
 
-        ### Bài toán đặt ra
-        - Xây dựng mô hình **Gợi ý xe tương tự**:
-            - Sử dụng các đặc trưng từ mô tả xe và thông số kỹ thuật
-            - Gợi ý các mẫu xe tương tự với xe được chọn hoặc theo từ khóa tìm kiếm.
-
-        - Xây dựng mô hình **Phân khúc thị trường xe bằng phương pháp phân cụm**:
-            - Phân cụm thị trường xe máy dựa các đặc trưng giá xe, tuổi xe, số km đã chạy, khoảng giá tối thiểu, tối đa.
-            - Giúp nhận diện các nhóm sản phẩm theo các phân khúc khác nhau
-
-
-        ### Phạm vi triển khai
-        - **Tiền xử lý dữ liệu và chuẩn hóa**:
-            - Chuẩn hóa các thông số của xe.
-            - Làm sạch dữ liệu và chuẩn hóa trường thông tin cho mô hình.
-
-        - **Trích xuất đặc trưng văn bản và tính độ tương đồng**:
-            - Sử dụng **TF-IDF Vectorizer** để mã hóa mô tả và thông tin kỹ thuật.
-            - Tính độ tương đồng bằng **gensim similarity** và **cosine similarity**.
-            - Chọn phương pháp cho **điểm cao hơn** và **nghĩa đúng hơn** để đưa vào hệ thống gợi ý.
-
-        - **Phân cụm thị trường (Clustering)**:
-            - Thử nghiệm trên các thuật toán:  
-                - **KMeans**  
-                - **Agglomerative Clustering**  
-                - **Bisecting KMeans**
-            - Đánh giá bằng inertia, silhouette score, tính diễn giải.
-            - **Chọn KMeans** vì có hiệu suất ổn định, dễ diễn giải và ranh giới cụm phù hợp hơn với dữ liệu.
-
-        - **Xây dựng GUI trên Streamlit**:
-            - Cho phép người dùng **chọn xe trong danh sách** hoặc **nhập mô tả xe** → trả về **danh sách mẫu xe tương tự có trong sàn**.
+        **4. Xây dựng GUI trên Streamlit**:  
+            - Cho phép người dùng **chọn xe trong danh sách** hoặc **nhập mô tả xe** → trả về **danh sách mẫu xe tương tự có trong sàn**.  
             - Cho phép **nhập tên xe** → hiển thị **xe thuộc cụm/phân khúc nào**.
+                """)
 
-
-        ### Thu thập dữ liệu
+    yellow_pad_header('Thu thập dữ liệu')
+    st.markdown("""
         - Bộ dữ liệu gồm **7.208 tin đăng** với **18 thuộc tính** (thương hiệu, dòng xe, số km, năm đăng ký, giá niêm yết, mô tả, v.v…) được thu thập từ nền tảng **Chợ Tốt** (trước ngày 01/07/2025).
         - Bộ dữ liệu bao gồm các thông tin sau:
             - **id**: số thứ tự của sản phẩm trong bộ dữ liệu  
@@ -280,22 +463,39 @@ elif page == "Bài toán nghiệp vụ":
             - **Chính sách bảo hành**: thông tin bảo hành nếu có  
             - **Trọng lượng**: trọng lượng ước tính của xe  
             - **Href**: đường dẫn tới bài đăng sản phẩm 
+                """)
 
-    """)
+elif page == 'Đánh giá mô hình và Báo cáo':
+    st.markdown("""
+    <h1 style='font-size:48px; font-weight:800; margin-bottom:8px;'>
+        Đánh giá mô hình và Báo cáo
+    </h1>
+    <div style='width:90px; height:6px; background:#FF9A00; border-radius:3px; margin-bottom:24px;'></div>
+""", unsafe_allow_html=True)
+    
+    # Function for light yellow pad header
+    def yellow_pad_header(text):
+        st.markdown(f"""
+            <div style="
+                background: #FFF4C2;
+                border-left: 6px solid #FFDE37;
+                padding: 12px 18px;
+                border-radius: 6px;
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                margin: 15px 0 10px 0;
+            ">
+                {text}
+            </div>
+        """, unsafe_allow_html=True) 
+
+    yellow_pad_header('Thống kê mô tả sơ bộ')
 
 
-elif page == "Đánh giá mô hình và Báo cáo":    
-    st.title("Đánh giá mô hình và Báo cáo")  
-
-    st.subheader("I. Thống kê mô tả sơ bộ")
-
-    # st.markdown("""
-    # **1. Thống kê mô tả sơ bộ** 
-    # """)
     st.markdown("""        
     Bộ dữ liệu gồm **7.208 tin đăng** với **18 thuộc tính** (thương hiệu, dòng xe, số km, năm đăng ký, giá niêm yết, mô tả…) được thu thập từ nền tảng **Chợ Tốt** (trước ngày 01/07/2025).  
                 """)
-    # --- Vẽ biểu đồ ---
 
     # Hiển thị 4 biểu đồ dạng lưới 2x2
     col1, col2 = st.columns(2)
@@ -307,7 +507,7 @@ elif page == "Đánh giá mô hình và Báo cáo":
         st.image("price_bin_stats.png")
         st.image("mileage_bin_stats.png")
 
-    st.subheader("II. Mô hình gợi ý xe máy tương tự")
+    yellow_pad_header('Mô hình gợi ý xe máy tương tự')
 
     # with open("data/data_motobikes.xlsx", "rb") as f:
     #     st.download_button(
@@ -339,7 +539,7 @@ elif page == "Đánh giá mô hình và Báo cáo":
     st.markdown('#### 2. Kết quả')
     st.write('Giữa 02 mô hình Gensim và Cosine similarity, Cosine similarity, trong cả 2 trường hợp chọn xe có sẵn hoặc tìm bằng từ khóa, cho điểm tương đồng trung bình cao hơn so với Gensim và cho các gợi ý sát nghĩa hơn Gensim.\nMô hình dùng để dự đoán xe trong ứng dụng này là Cosine similarity.') 
 
-    st.subheader("III. Mô hình phân khúc xe máy bằng phương pháp phân cụm")
+    yellow_pad_header('Mô hình phân khúc xe máy')
     
     st.markdown('#### 1. Xử lý dữ liệu')
     st.write('Dữ liệu được làm sạch, các đặc trưng biến số liên tục như giá, khoảng giá thấp nhất, lớn nhất, tuổi xe, số km đã đi được chọn để tạo mô hình phân cụm')
@@ -418,90 +618,191 @@ elif page == "Đánh giá mô hình và Báo cáo":
 
 
 elif page == "Gợi ý mẫu xe tương tự":
-    st.title("Gợi ý mẫu xe tương tự")
-    # theo xe có sẵn
-    st.header("Gợi ý xe theo mẫu có sẵn")
-    selected = st.selectbox("Chọn mẫu xe:", df["title"])
+    # Main page header
+    st.markdown("""
+    <h1 style='font-size:48px; font-weight:800; margin-bottom:8px;'>
+        Gợi ý mẫu xe tương tự
+    </h1>
+    <div style='width:90px; height:6px; background:#FF9A00; border-radius:3px; margin-bottom:24px;'></div>
+    """, unsafe_allow_html=True)
+
+    # Yellow pad header function (keep for consistent style)
+    def yellow_pad_header(text):
+        st.markdown(f"""
+            <div style="
+                background: #FFF4C2;
+                border-left: 6px solid #FFDE37;
+                padding: 12px 18px;
+                border-radius: 6px;
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                margin: 15px 0 10px 0;
+            ">
+                {text}
+            </div>
+        """, unsafe_allow_html=True)
+
+    # ----- Card CSS -----
+    st.markdown("""
+        <style>
+        .card {
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin: 8px 0;
+            border: 1px solid #eee;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            background-color: #ffffff;
+        }
+        .bike-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .bike-sub {
+            font-size: 13px;
+            color: #666666;
+        }
+        .small-muted {
+            font-size: 12px;
+            color: #777777;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # ----- Card renderer -----
+    def display_bike_card(row):
+        title = row.get('title', 'N/A')
+        price = fmt_vnd(row.get('price', None))  
+        brand = row.get('brand', '-')
+        model = row.get('model', '-')
+        km = row.get('mileage_km', '-')
+        year = row.get('registration_year', '-')
+        year_shown = int(year) if str(year).isdigit() else year
+        origin = row.get('origin', '-')
+        desc = row.get('description', '')
+
+        card_html = f"""
+        <div class='card'>
+            <div style='display:flex; gap:14px; align-items:center'>
+                <div style='flex:1'>
+                    <div class='bike-title'>{title}</div>
+                    <div class='bike-sub'>{brand} — {model} • {origin}</div>
+                    <div style='margin-top:6px'>{textwrap.shorten(str(desc), width=220)}</div>
+                </div>
+                <div style='text-align:right; min-width:150px'>
+                    <div style='font-weight:700; font-size:16px'>{price}</div>
+                    <div class='small-muted' style='margin-top:8px'>
+                        Số km: {km}<br/>Năm: {year_shown}
+                    </div>
+                </div>
+            </div>
+        </div>
+        """
+        st.markdown(card_html, unsafe_allow_html=True)
+
+    # ----- Main interaction -----
+    yellow_pad_header("Gợi ý theo mẫu có sẵn")
+
+    titles_list = df['title'] if 'title' in df else []
+    selected = st.selectbox("Chọn 1 mẫu trong danh sách", titles_list)
 
     if st.button("Gợi ý"):
-        similar_titles = get_similar_bikes(selected)
-        # Show thêm chính bảng ghi của xe đã chọn
-        selected_row = df[df["title"] == selected][
-            ["id", "title", "description", "price", "brand", "model",
-            "bike_type", "origin", "condition", "mileage_km",
-            "registration_year", "engine_capacity"]
-        ]
+        with st.spinner("🔎 Đang tìm mẫu tương tự..."):
+            # assumes you have this function: (title, top_n) -> (titles, scores)
+            similar_titles, scores = get_top_n_similar_by_title(selected, top_n=5)
 
-        selected_row = selected_row.rename(columns={
-            "id": "id",
-            "title": "Tiêu đề",
-            "description": "Mô tả",
-            "price": "Giá",
-            "brand": "Hãng",
-            "model": "Dòng xe",
-            "bike_type": "Loại xe",
-            "origin": "Xuất xứ",
-            "condition": "Tình trạng",
-            "mileage_km": "Số km",
-            "registration_year": "Năm đăng ký",
-            "engine_capacity": "Dung tích xe"
-        })
+        if not similar_titles:
+            st.warning("Không tìm thấy kết quả — kiểm tra lại dữ liệu.")
+        else:
+            st.success(f"Đã tìm {len(similar_titles)} mẫu tương tự")
 
-        st.markdown("**Xe bạn đã chọn:**")
-        st.dataframe(selected_row, width='stretch')
+            # 🔶 show selected bike first
+            st.markdown("#### 🔶 Mẫu bạn đã chọn")
+            selected_row = df[df["title"] == selected].iloc[0]
+            display_bike_card(selected_row)
 
-        # Filter dataframe to only the similar bikes
-        result_df = df[df["title"].isin(similar_titles)][
-            ["id", "title", "description", "price", "brand", "model", "bike_type", "origin", "condition", "mileage_km" ,"registration_year", "engine_capacity"]
-        ]
-        result_df = result_df.rename(columns={
-                "id": "id",
-                "title": "Tiêu đề",
-                "description": "Mô tả",
-                "price": "Giá",
-                "brand": "Hãng",
-                "model": "Dòng xe",
-                "bike_type": "Loại xe",
-                "origin": "Xuất xứ",
-                "condition": "Tình trạng",
-                "mileage_km": "Số km",
-                "registration_year": "Năm đăng ký",
-                "engine_capacity": "Dung tích xe"
-            })
-        
-        st.markdown("**Các mẫu xe gợi ý:**")
-        st.dataframe(result_df, width='stretch')
+            # 🔶 show similar bikes
+            st.markdown("#### 🔶 Các mẫu tương tự")
+            for t, s in zip(similar_titles, scores):
+                row = df[df["title"] == t].iloc[0]
+                display_bike_card(row)
+                # st.caption(f"Similarity score: {s:.3f}")
+
         
     # theo từ khóa
-    st.header("Tìm kiếm theo từ khóa")
-    keyword = st.text_input("Nhập từ khóa")
-    if st.button("Tìm xe tương tự") and keyword.strip():
-        similar_titles = search_by_keyword(keyword)
+    yellow_pad_header("Tìm kiếm theo từ khóa")
 
-        # Filter dataframe to only the similar bikes
-        result_search_df = df[df["title"].isin(similar_titles)][
-            ["id", "title", "description", "price", "brand", "model", "bike_type", "origin", "condition", "mileage_km" ,"registration_year", "engine_capacity"]
-        ]
-        result_search_df = result_search_df.rename(columns={
-                "id": "id",
-                "title": "Tiêu đề",
-                "description": "Mô tả",
-                "price": "Giá",
-                "brand": "Hãng",
-                "model": "Dòng xe",
-                "bike_type": "Loại xe",
-                "origin": "Xuất xứ",
-                "condition": "Tình trạng",
-                "mileage_km": "Số km",
-                "registration_year": "Năm đăng ký",
-                "engine_capacity": "Dung tích xe"
-            })
-
-
-        st.dataframe(result_search_df, width='stretch')
+    q = st.text_input('Nhập từ khóa tìm kiếm, ví dụ: "honda vision 2014 màu đỏ"')
+    top_k = st.selectbox('Số kết quả trả về', [1, 3, 5, 10])
+    if st.button('Tìm kiếm') and q.strip():
+        with st.spinner('🔎 Đang xử lý từ khóa...'):
+            q_vec = vectorizer.transform([q])
+            sim_scores = cosine_similarity(q_vec, tfidf_matrix).flatten()
+            idxs = sim_scores.argsort()[-top_k:][::-1]
+            res = df.iloc[idxs]
+        st.write(f'Kết quả top {top_k} cho: "{q}"')
+        for i, (_, r) in enumerate(res.iterrows()):
+            display_bike_card(r)
+            # st.caption(f'Similarity score: {sim_scores[idxs[i]]:.3f}')
 
 elif page == "Phân cụm phân khúc xe máy":
-    st.title("Phân cụm phân khúc xe máy")
+    # Main page header
+    st.markdown("""
+    <h1 style='font-size:48px; font-weight:800; margin-bottom:8px;'>
+        Phân cụm phân khúc xe máy
+    </h1>
+    <div style='width:90px; height:6px; background:#FF9A00; border-radius:3px; margin-bottom:24px;'></div>
+    """, unsafe_allow_html=True)
+
+    # Yellow pad header function (keep for consistent style)
+    def yellow_pad_header(text):
+        st.markdown(f"""
+            <div style="
+                background: #FFF4C2;
+                border-left: 6px solid #FFDE37;
+                padding: 12px 18px;
+                border-radius: 6px;
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+                margin: 15px 0 10px 0;
+            ">
+                {text}
+            </div>
+        """, unsafe_allow_html=True)
+
+    # ----- Card CSS -----
+    st.markdown("""
+        <style>
+        .card {
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin: 8px 0;
+            border: 1px solid #eee;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            background-color: #ffffff;
+        }
+        .bike-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .bike-sub {
+            font-size: 13px;
+            color: #666666;
+        }
+        .small-muted {
+            font-size: 12px;
+            color: #777777;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    
+    # ----- Main interaction -----
+    yellow_pad_header("Phân cụm xe mới")
+
 
     st.markdown("""
     <style>
@@ -546,8 +847,6 @@ elif page == "Phân cụm phân khúc xe máy":
 
 
     # ====== CLUSTER NEW BIKE ======
-    st.header("Phân cụm xe mới")
-
     st.write("Vui lòng nhập các thông số của xe cần xác định")
 
     col1, col2 = st.columns(2)
@@ -599,7 +898,37 @@ elif page == "Phân cụm phân khúc xe máy":
                     </div>
                 </div>
             """
+                }
+        st.markdown("""
+        <style>
+        .cluster-card {
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin: 10px 0;
+            border: 1px solid #E5C600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            color: #000000;
         }
+
+        .cluster-title {
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 6px;
+            color: #000000;
+        }
+
+        .cluster-desc {
+            font-size: 14px;
+            color: #000000;
+            line-height: 1.4;
+        }
+
+        /* ✅ Different yellow for each cluster */
+        .cluster-0 { background: #FFF7A6; }
+        .cluster-1 { background: #FFE970; }
+        .cluster-2 { background: #FFDE37; }
+        </style>
+        """, unsafe_allow_html=True)
 
         # Hiển thị card tương ứng
         st.markdown(cluster_cards.get(cluster, ""), unsafe_allow_html=True)
